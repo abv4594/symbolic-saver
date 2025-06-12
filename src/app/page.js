@@ -58,13 +58,17 @@ export default function HomePage() {
   };
 
   const totalBTC = portfolio.reduce((sum, p) => sum + p.btc, 0);
+  const totalUSD = (totalBTC * btcPrice).toFixed(2);
 
   if (view === "dashboard") {
     return (
       <div className="min-h-screen bg-white text-gray-900 px-6 py-10">
         <h1 className="text-3xl font-bold mb-6 text-center">Your Symbolic Portfolio</h1>
-        <p className="text-center text-lg mb-6">
+        <p className="text-center text-lg mb-1">
           Total BTC: <span className="font-bold">{totalBTC.toFixed(6)} BTC</span>
+        </p>
+        <p className="text-center text-md mb-4 text-gray-700">
+          ≈ <span className="font-bold">${parseFloat(totalUSD).toLocaleString()}</span> USD
         </p>
         <p className="text-center text-sm text-gray-500 mb-4">
           (BTC price: ${btcPrice.toLocaleString()})
