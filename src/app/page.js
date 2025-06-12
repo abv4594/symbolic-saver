@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const products = [
   {
@@ -26,7 +26,25 @@ const products = [
 export default function HomePage() {
   const [view, setView] = useState("home");
   const [portfolio, setPortfolio] = useState([]);
-  const btcPrice = 68000; // Simulated BTC price
+  const [btcPrice, setBtcPrice] = useState(68000);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("portfolio");
+    if (saved) {
+      setPortfolio(JSON.parse(saved));
+    }
+    fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.bitcoin && data.bitcoin.usd) {
+          setBtcPrice(data.bitcoin.usd);
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("portfolio", JSON.stringify(portfolio));
+  }, [portfolio]);
 
   const handleBTCBuy = (product) => {
     const btcAmount = product.price / btcPrice;
@@ -47,6 +65,9 @@ export default function HomePage() {
         <h1 className="text-3xl font-bold mb-6 text-center">Your Symbolic Portfolio</h1>
         <p className="text-center text-lg mb-6">
           Total BTC: <span className="font-bold">{totalBTC.toFixed(6)} BTC</span>
+        </p>
+        <p className="text-center text-sm text-gray-500 mb-4">
+          (BTC price: ${btcPrice.toLocaleString()})
         </p>
 
         <div className="max-w-3xl mx-auto space-y-4">
