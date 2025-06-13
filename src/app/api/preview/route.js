@@ -8,7 +8,12 @@ export async function GET(request) {
   }
 
   try {
-    const res = await fetch(`https://jsonlink.io/api/extract?url=${encodeURIComponent(url)}`);
+   const res = await fetch(`https://jsonlink.io/api/extract?url=${encodeURIComponent(url)}`, {
+    headers: {
+        "Accept": "application/json",
+  },
+});
+
     const data = await res.json();
 
     return Response.json({
