@@ -34,9 +34,9 @@ export default function HomePage() {
         return;
       }
       try {
-        const res = await fetch(`https://jsonlink.io/api/extract?url=${encodeURIComponent(form.link)}`);
+        const res = await fetch(`/api/preview?url=${encodeURIComponent(form.link)}`);
         const data = await res.json();
-        setPreview({ title: data.title, image: data.images?.[0] });
+        setPreview({ title: data.title, image: data.image });
       } catch (err) {
         setPreview(null);
       }
@@ -44,12 +44,17 @@ export default function HomePage() {
     fetchPreview();
   }, [form.link]);
 
+  const normalizeLink = (url) => {
+    if (!url) return "";
+    return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+  };
+
   const handleBTCBuy = () => {
     const price = parseFloat(form.price);
     const btcAmount = price / btcPrice;
     const newEntry = {
       name: form.name,
-      link: form.link,
+      link: normalizeLink(form.link),
       price,
       btc: parseFloat(btcAmount.toFixed(6)),
     };
@@ -186,7 +191,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 px-6 py-10">
-      {/* Hero Section */}
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h1 className="text-4xl font-bold mb-4">
           Buy Less. Save More. Invest in Bitcoin Instead.
@@ -202,7 +206,6 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* How It Works Section */}
       <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8 mb-16 text-center">
         <div>
           <div className="text-4xl mb-2">🛍️</div>
@@ -221,7 +224,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* BTC Comparison Example */}
       <div className="max-w-2xl mx-auto text-center">
         <h3 className="text-2xl font-semibold mb-2">
           If you didn’t buy this iPad 3 years ago...
