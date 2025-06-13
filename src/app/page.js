@@ -7,6 +7,7 @@ export default function HomePage() {
   const [portfolio, setPortfolio] = useState([]);
   const [btcPrice, setBtcPrice] = useState(68000);
   const [form, setForm] = useState({ name: "", link: "", price: "" });
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("portfolio");
@@ -26,6 +27,23 @@ export default function HomePage() {
     localStorage.setItem("portfolio", JSON.stringify(portfolio));
   }, [portfolio]);
 
+  useEffect(() => {
+    const fetchPreview = async () => {
+      if (!form.link) {
+        setPreview(null);
+        return;
+      }
+      try {
+        const res = await fetch(`https://jsonlink.io/api/extract?url=${encodeURIComponent(form.link)}`);
+        const data = await res.json();
+        setPreview({ title: data.title, image: data.images?.[0] });
+      } catch (err) {
+        setPreview(null);
+      }
+    };
+    fetchPreview();
+  }, [form.link]);
+
   const handleBTCBuy = () => {
     const price = parseFloat(form.price);
     const btcAmount = price / btcPrice;
@@ -37,6 +55,7 @@ export default function HomePage() {
     };
     setPortfolio([...portfolio, newEntry]);
     setForm({ name: "", link: "", price: "" });
+    setPreview(null);
     setView("dashboard");
   };
 
@@ -122,6 +141,14 @@ export default function HomePage() {
               onChange={(e) => setForm({ ...form, link: e.target.value })}
             />
           </div>
+          {preview && (
+            <div className="mb-4 border rounded p-3 bg-gray-50">
+              {preview.image && (
+                <img src={preview.image} alt="Preview" className="mb-2 w-full h-40 object-cover rounded" />
+              )}
+              {preview.title && <p className="text-sm font-medium">{preview.title}</p>}
+            </div>
+          )}
           <div className="mb-6">
             <label className="block font-semibold mb-1">Price in USD *</label>
             <input
