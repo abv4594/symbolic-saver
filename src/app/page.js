@@ -2,31 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-const products = [
-  {
-    id: 1,
-    name: "iPad",
-    price: 399,
-    image: "https://via.placeholder.com/200x150?text=iPad",
-  },
-  {
-    id: 2,
-    name: "AirPods Pro",
-    price: 249,
-    image: "https://via.placeholder.com/200x150?text=AirPods",
-  },
-  {
-    id: 3,
-    name: "MacBook Air",
-    price: 999,
-    image: "https://via.placeholder.com/200x150?text=MacBook",
-  },
-];
-
 export default function HomePage() {
   const [view, setView] = useState("home");
   const [portfolio, setPortfolio] = useState([]);
   const [btcPrice, setBtcPrice] = useState(68000);
+  const [form, setForm] = useState({ name: "", link: "", price: "" });
 
   useEffect(() => {
     const saved = localStorage.getItem("portfolio");
@@ -46,14 +26,17 @@ export default function HomePage() {
     localStorage.setItem("portfolio", JSON.stringify(portfolio));
   }, [portfolio]);
 
-  const handleBTCBuy = (product) => {
-    const btcAmount = product.price / btcPrice;
+  const handleBTCBuy = () => {
+    const price = parseFloat(form.price);
+    const btcAmount = price / btcPrice;
     const newEntry = {
-      name: product.name,
-      price: product.price,
+      name: form.name,
+      link: form.link,
+      price,
       btc: parseFloat(btcAmount.toFixed(6)),
     };
     setPortfolio([...portfolio, newEntry]);
+    setForm({ name: "", link: "", price: "" });
     setView("dashboard");
   };
 
@@ -82,13 +65,22 @@ export default function HomePage() {
             >
               <div>
                 <p className="text-lg font-semibold">{entry.name}</p>
-                <p className="text-sm text-gray-600">${entry.price} saved instead</p>
+                <p className="text-sm text-gray-600">
+                  ${entry.price} saved instead
+                </p>
+                {entry.link && (
+                  <a
+                    href={entry.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 text-sm underline"
+                  >
+                    View Link
+                  </a>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-md font-bold">{entry.btc} BTC</p>
-                <p className="text-xs text-gray-500">
-                  (~{(entry.price / entry.price).toFixed(1)} {entry.name})
-                </p>
               </div>
             </div>
           ))}
@@ -99,7 +91,7 @@ export default function HomePage() {
             onClick={() => setView("catalog")}
             className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
           >
-            Browse More
+            Add Another
           </button>
         </div>
       </div>
@@ -109,24 +101,52 @@ export default function HomePage() {
   if (view === "catalog") {
     return (
       <div className="min-h-screen bg-white text-gray-900 px-6 py-10">
-        <h1 className="text-3xl font-bold mb-8 text-center">What are you tempted to buy?</h1>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {products.map((product) => (
-            <div key={product.id} className="border rounded-xl p-4 shadow hover:shadow-lg transition">
-              <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded mb-4" />
-              <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-              <p className="text-sm text-gray-600 mb-4">Price: ${product.price}</p>
-              <div className="flex flex-col gap-2">
-                <button className="bg-gray-300 text-black px-4 py-2 rounded">Buy this item</button>
-                <button
-                  className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-                  onClick={() => handleBTCBuy(product)}
-                >
-                  Buy BTC Instead
-                </button>
-              </div>
-            </div>
-          ))}
+        <h1 className="text-3xl font-bold mb-8 text-center">What do you want to buy?</h1>
+        <div className="max-w-xl mx-auto">
+          <div className="mb-4">
+            <label className="block font-semibold mb-1">Name of Item *</label>
+            <input
+              type="text"
+              className="w-full border px-4 py-2 rounded"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block font-semibold mb-1">Link (optional)</label>
+            <input
+              type="url"
+              className="w-full border px-4 py-2 rounded"
+              value={form.link}
+              onChange={(e) => setForm({ ...form, link: e.target.value })}
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block font-semibold mb-1">Price in USD *</label>
+            <input
+              type="number"
+              className="w-full border px-4 py-2 rounded"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              className="bg-gray-300 text-black px-4 py-2 rounded"
+              onClick={() => alert("This would redirect to buy item.")}
+            >
+              Buy this item
+            </button>
+            <button
+              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+              onClick={handleBTCBuy}
+              disabled={!form.name || !form.price}
+            >
+              Buy BTC Instead
+            </button>
+          </div>
         </div>
         <div className="text-center mt-10">
           <button onClick={() => setView("home")} className="text-blue-600 underline">
@@ -151,7 +171,7 @@ export default function HomePage() {
           onClick={() => setView("catalog")}
           className="bg-black text-white px-6 py-3 rounded-full text-lg hover:bg-gray-800 transition"
         >
-          Browse Temptations
+          Add a Temptation
         </button>
       </div>
 
@@ -159,18 +179,18 @@ export default function HomePage() {
       <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8 mb-16 text-center">
         <div>
           <div className="text-4xl mb-2">🛍️</div>
-          <h2 className="font-semibold text-xl mb-1">Browse Popular Products</h2>
-          <p className="text-sm">Pick what you'd normally buy online</p>
+          <h2 className="font-semibold text-xl mb-1">Describe a Product</h2>
+          <p className="text-sm">What you wanted to buy</p>
         </div>
         <div>
           <div className="text-4xl mb-2">💸</div>
           <h2 className="font-semibold text-xl mb-1">Buy BTC Instead</h2>
-          <p className="text-sm">Choose to symbolically invest instead of purchasing</p>
+          <p className="text-sm">Symbolically invest that money</p>
         </div>
         <div>
           <div className="text-4xl mb-2">📈</div>
-          <h2 className="font-semibold text-xl mb-1">Watch It Grow</h2>
-          <p className="text-sm">See how much you’ve saved in your dashboard</p>
+          <h2 className="font-semibold text-xl mb-1">Track Growth</h2>
+          <p className="text-sm">See your symbolic investment value</p>
         </div>
       </div>
 
