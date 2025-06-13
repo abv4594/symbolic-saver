@@ -1,4 +1,3 @@
-// symbolic-saver/src/app/api/preview/route.js
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url");
@@ -8,11 +7,15 @@ export async function GET(request) {
   }
 
   try {
-   const res = await fetch(`https://jsonlink.io/api/extract?url=${encodeURIComponent(url)}`, {
-    headers: {
-        "Accept": "application/json",
-  },
-});
+    const res = await fetch(`https://jsonlink.io/api/extract?url=${encodeURIComponent(url)}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      return Response.json({ error: "Failed to fetch preview" }, { status: 500 });
+    }
 
     const data = await res.json();
 
@@ -21,6 +24,6 @@ export async function GET(request) {
       image: (data.images && data.images[0]) || "",
     });
   } catch (e) {
-    return Response.json({ error: "Failed to fetch preview" }, { status: 500 });
+    return Response.json({ error: "Server error" }, { status: 500 });
   }
 }
